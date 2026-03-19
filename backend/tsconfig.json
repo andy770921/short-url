@@ -18,7 +18,8 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@repo/shared": ["../shared/src/index.ts"]
     }
   },
   "include": ["src/**/*", "api/**/*"],

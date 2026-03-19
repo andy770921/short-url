@@ -14,5 +14,38 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  ignorePatterns: ['node_modules/', 'dist/', 'build/', 'coverage/'],
+  ignorePatterns: ['node_modules/', 'dist/', 'build/', 'coverage/', '.next/'],
+  overrides: [
+    // TypeScript files
+    {
+      files: ['**/*.ts', '**/*.tsx'],
+      parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint'],
+      extends: ['plugin:@typescript-eslint/recommended', 'prettier'],
+      rules: {
+        '@typescript-eslint/interface-name-prefix': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+    // Next.js frontend
+    {
+      files: ['frontend/**/*.ts', 'frontend/**/*.tsx', 'frontend/**/*.js', 'frontend/**/*.jsx'],
+      extends: ['next/core-web-vitals', 'prettier'],
+    },
+    // Backend NestJS
+    {
+      files: ['backend/**/*.ts'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        project: './backend/tsconfig.json',
+        sourceType: 'module',
+      },
+      env: {
+        node: true,
+        jest: true,
+      },
+    },
+  ],
 };

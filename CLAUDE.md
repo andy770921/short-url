@@ -2,13 +2,14 @@
 
 ## Project Overview
 
-This is a fullstack monorepo with React (Vite) frontend and NestJS backend, designed for seamless Claude Code integration. Uses npm workspaces + Turborepo for unified dependency management.
+This is a fullstack monorepo with Next.js frontend and NestJS backend, designed for seamless Claude Code integration. Uses npm workspaces + Turborepo for unified dependency management.
 
 ## Structure
 
 ```
-├── frontend/           # React + Vite + Vitest
+├── frontend/           # Next.js (App Router) + TanStack Query + Vitest
 ├── backend/            # NestJS + nodemon
+├── shared/             # Shared TypeScript types (@repo/shared)
 ├── .claude/commands/   # Custom slash commands
 ├── documents/          # Work tracking (organized by ticket)
 ├── turbo.json          # Turborepo configuration
@@ -21,7 +22,7 @@ This is a fullstack monorepo with React (Vite) frontend and NestJS backend, desi
 # Install all dependencies (single command!)
 npm install
 
-# Start development (FE on :5173, BE on :3000)
+# Start development (FE on :3001, BE on :3000)
 npm run dev
 
 # Run all tests
@@ -39,7 +40,7 @@ npm run lint
 Both frontend and backend are configured for Vercel deployment.
 
 ### Frontend
-- Auto-detected as Vite project
+- Auto-detected as Next.js project
 - Set root directory: `frontend`
 - Config: `frontend/vercel.json`
 
@@ -83,13 +84,15 @@ documents/
 - Single quotes | Trailing commas: all | Bracket spacing: true
 
 ### ESLint
-- Frontend: react-app + prettier
-- Backend: @typescript-eslint + prettier
+- Unified configuration in root `.eslintrc.js`
+- Supports TypeScript (@typescript-eslint), Next.js, and Prettier
+- All ESLint packages installed at root level
 
 ### TypeScript
 - Strict mode enabled
-- Frontend: ES2020, React JSX
+- Frontend: ES2020, Next.js/React JSX (moduleResolution: bundler)
 - Backend: ES2021, CommonJS, decorators
+- Shared: ES2020, CommonJS (importable from both apps)
 
 ## Testing
 
@@ -104,7 +107,8 @@ cd backend && npm run test
 
 ## Development Notes
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000
+- Frontend: http://localhost:3001 (Next.js)
+- Backend: http://localhost:3000 (NestJS)
+- Shared types: `shared/src/` — import as `@repo/shared`
 - Uses Turborepo for parallel task execution
 - Caching enabled for builds

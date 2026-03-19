@@ -1,24 +1,25 @@
 # Claude Code Fullstack Boilerplate
 
-A fullstack monorepo with React (Vite) frontend and NestJS backend, optimized for Claude Code integration.
+A fullstack monorepo with Next.js frontend and NestJS backend, optimized for Claude Code integration.
 
 ## Features
 
-- **Frontend**: React 18 + TypeScript + Vite + Vitest
+- **Frontend**: Next.js 15 (App Router) + TypeScript + TanStack Query v5 + Vitest
 - **Backend**: NestJS 11 + TypeScript + Jest
-- **Shared**: ESLint + Prettier configuration
-- **Claude Code**: 5 custom slash commands for structured development
+- **Shared**: `@repo/shared` — TypeScript types shared between FE and BE
+- **Tooling**: ESLint + Prettier + Turborepo
+- **Claude Code**: 6 custom slash commands for structured development
 
 ## Quick Start
 
 ```bash
 # Install all dependencies
-npm run install:all
+npm install
 
 # Start development servers
 npm run dev
-# Frontend: http://localhost:5173
-# Backend: http://localhost:3000
+# Frontend: http://localhost:3001
+# Backend:  http://localhost:3000
 
 # Run tests
 npm run test
@@ -30,23 +31,34 @@ npm run lint
 ## Project Structure
 
 ```
-- frontend/               # React + Vite application
-- backend/                # NestJS application
-- .claude/commands/       # Claude Code slash commands
-- documents/              # Work tracking by ticket
-- CLAUDE.md               # Claude Code instructions
-- package.json            # Root convenience scripts
+├── frontend/             # Next.js App Router application
+├── backend/              # NestJS application
+├── shared/               # Shared TypeScript types (@repo/shared)
+├── .claude/commands/     # Claude Code slash commands
+├── documents/            # Work tracking by ticket
+├── CLAUDE.md             # Claude Code instructions
+└── package.json          # Root workspaces + scripts
 ```
+
+## API Integration
+
+The frontend calls the backend via a typed API client (`frontend/src/lib/api-client.ts`):
+
+- All types come from `@repo/shared` — one source of truth for FE + BE
+- Next.js rewrites `/api/*` → `http://localhost:3000/*` in dev (no CORS needed)
+- TanStack Query hooks (`frontend/src/queries/`) handle caching, loading, and error states
+- Components only call hooks — they never touch `fetch` directly
 
 ## Claude Code Commands
 
-| Command                                   | Description                               |
-| ----------------------------------------- | ----------------------------------------- |
-| `/write-a-prd [TICKET]`                   | Create a PRD through systematic discovery |
-| `/grill-me [TICKET]`                      | Stress-test a plan through questioning    |
-| `/tdd [TICKET]`                           | Implement with test-driven development    |
-| `/triage-issue [TICKET]`                  | Investigate bugs and create fix plans     |
-| `/improve-codebase-architecture [TICKET]` | Find architectural improvements           |
+| Command                                   | Description                                 |
+| ----------------------------------------- | ------------------------------------------- |
+| `/write-a-prd [TICKET]`                   | Create a PRD through systematic discovery   |
+| `/grill-me [TICKET]`                      | Stress-test a plan through questioning      |
+| `/tdd [TICKET]`                           | Implement with test-driven development      |
+| `/triage-issue [TICKET]`                  | Investigate bugs and create fix plans       |
+| `/improve-codebase-architecture [TICKET]` | Find architectural improvements             |
+| `/deploy-vercel [TICKET]`                 | Deploy to Vercel with step-by-step guidance |
 
 ## Documentation
 

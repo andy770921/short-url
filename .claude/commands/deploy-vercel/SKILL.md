@@ -4,7 +4,7 @@ description: Deploy frontend and/or backend to Vercel with step-by-step guidance
 
 # Deploy to Vercel
 
-Guide the user through deploying this fullstack application to Vercel. Both frontend (React/Vite) and backend (NestJS) are configured for Vercel deployment.
+Guide the user through deploying this fullstack application to Vercel. Both frontend (Next.js) and backend (NestJS) are configured for Vercel deployment.
 
 ## TICKET Resolution
 
@@ -54,10 +54,7 @@ Verify with user:
 The frontend is pre-configured in `frontend/vercel.json`:
 ```json
 {
-  "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install"
+  "framework": "nextjs"
 }
 ```
 
@@ -76,13 +73,13 @@ The frontend is pre-configured in `frontend/vercel.json`:
 3. **Configure Project**
    - **Project Name**: Choose a name (e.g., `my-app-frontend`)
    - **Root Directory**: Click "Edit" → Enter `frontend`
-   - **Framework Preset**: Should auto-detect as "Vite"
-   - **Build Command**: `npm run build` (auto-filled)
-   - **Output Directory**: `dist` (auto-filled)
+   - **Framework Preset**: Should auto-detect as "Next.js"
+   - **Build Command**: `next build` (auto-filled)
+   - **Output Directory**: `.next` (auto-filled)
 
 4. **Environment Variables** (if needed)
-   - Add any `VITE_*` environment variables
-   - Example: `VITE_API_URL` = `https://your-api.vercel.app`
+   - Add any `NEXT_PUBLIC_*` environment variables
+   - Example: `NEXT_PUBLIC_API_URL` = `https://your-api.vercel.app`
 
 5. **Deploy**
    - Click "Deploy"
@@ -183,7 +180,7 @@ After both are deployed:
 1. **Set Frontend Environment Variable**
    - Go to Frontend project in Vercel
    - Settings → Environment Variables
-   - Add: `VITE_API_URL` = `https://your-api.vercel.app`
+   - Add: `NEXT_PUBLIC_API_URL` = `https://your-api.vercel.app`
    - Redeploy frontend
 
 2. **Set Backend CORS**
@@ -192,11 +189,11 @@ After both are deployed:
    - Add: `CORS_ORIGIN` = `https://your-frontend.vercel.app`
    - Redeploy backend
 
-3. **Update Frontend Code** (if needed)
+3. **Frontend API calls** are routed through `src/lib/api-client.ts`:
    ```typescript
-   // Use environment variable for API calls
-   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-   fetch(`${API_URL}/endpoint`);
+   // api-client.ts reads NEXT_PUBLIC_API_URL automatically
+   // All API calls go through apiClient.{resource}.{method}()
+   // Next.js rewrites /api/* → backend in development
    ```
 
 ---
@@ -219,7 +216,7 @@ Create deployment record at: `documents/{TICKET}/development/deployment-vercel.m
 - **Project**: [project-name]
 - **Root Directory**: frontend
 - **Environment Variables**:
-  - VITE_API_URL: [backend-url]
+  - NEXT_PUBLIC_API_URL: [backend-url]
 
 ### Backend
 - **URL**: https://[your-api].vercel.app

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { HealthResponse } from '@repo/shared';
 
 @Injectable()
 export class AppService {
@@ -6,7 +7,7 @@ export class AppService {
     return 'Hello from NestJS!';
   }
 
-  getHealth(): { status: string; timestamp: string } {
+  getHealth(): HealthResponse {
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),
