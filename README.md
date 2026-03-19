@@ -60,6 +60,13 @@ The frontend calls the backend via a typed API client (`frontend/src/lib/api-cli
 | `/improve-codebase-architecture [TICKET]` | Find architectural improvements             |
 | `/deploy-vercel [TICKET]`                 | Deploy to Vercel with step-by-step guidance |
 
+## Production
+
+| App | URL |
+|-----|-----|
+| Frontend | https://claude-code-boilerplate-frontend.vercel.app |
+| Backend | https://claude-code-boilerplate-backend.vercel.app |
+
 ## Documentation
 
 See [CLAUDE.md](CLAUDE.md) for detailed project instructions.
