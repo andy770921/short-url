@@ -3,6 +3,6 @@ import type { HealthResponse } from '@repo/shared';
 
 export function useHealth() {
   return useQuery<HealthResponse>({
-    queryKey: ['health'],
+    queryKey: ['api', 'health'],
   });
 }

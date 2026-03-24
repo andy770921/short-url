@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
 let app: NestExpressApplication;
@@ -12,6 +13,20 @@ async function bootstrap() {
     app.enableCors({
       origin: true,
       credentials: true,
+    });
+
+    // Swagger configuration (identical to main.ts)
+    const config = new DocumentBuilder()
+      .setTitle('NestJS Backend API')
+      .setDescription('API documentation for fullstack boilerplate')
+      .setVersion('1.0')
+      .addTag('api', 'Core API endpoints')
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('/', app, document, {
+      customSiteTitle: 'Backend API Documentation',
+      customfavIcon: 'https://nestjs.com/favicon.ico',
     });
 
     await app.init();
