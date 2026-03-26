@@ -1,6 +1,6 @@
-# Claude Code Fullstack Boilerplate
+# Short URL
 
-A fullstack monorepo featuring a URL shortener built with Next.js frontend and NestJS backend, optimized for Claude Code integration.
+A fullstack monorepo URL shortener built with Next.js frontend and NestJS backend, optimized for Claude Code integration.
 
 ## Features
 
