@@ -1,17 +1,16 @@
-import type { HealthResponse } from '@repo/shared';
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`);
-  if (!res.ok) {
-    throw new Error(`${res.status} ${res.statusText}`);
-  }
-  return res.json() as Promise<T>;
-}
+import { defaultFetchFn } from '../utils/fetchers/fetchers.client';
+import type { CreateShortUrlRequest, CreateShortUrlResponse, HealthResponse } from '@repo/shared';
 
 export const apiClient = {
   health: {
-    get: () => get<HealthResponse>('/api/health'),
+    get: () => defaultFetchFn<HealthResponse>('api/health'),
+  },
+  urls: {
+    create: (body: CreateShortUrlRequest) =>
+      defaultFetchFn<CreateShortUrlResponse, CreateShortUrlRequest>('api/urls', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      }),
   },
 };

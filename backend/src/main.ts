@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,16 +13,20 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Global validation pipe
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('NestJS Backend API')
     .setDescription('API documentation for fullstack boilerplate')
     .setVersion('1.0')
     .addTag('api', 'Core API endpoints')
+    .addTag('urls', 'URL shortener endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/', app, document, {
+  SwaggerModule.setup('/docs', app, document, {
     customSiteTitle: 'Backend API Documentation',
     customfavIcon: 'https://nestjs.com/favicon.ico',
   });
@@ -31,7 +36,6 @@ async function bootstrap() {
 
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger UI available at: http://localhost:${port}/`);
-  console.log(`OpenAPI JSON at: http://localhost:${port}/api-json`);
+  console.log(`Swagger UI available at: http://localhost:${port}/docs`);
 }
 bootstrap();

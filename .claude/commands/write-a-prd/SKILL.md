@@ -23,6 +23,14 @@ You are tasked with creating a Product Requirements Document (PRD) through syste
 
 ## Process
 
+This skill follows 6 main steps:
+1. Problem Discovery
+2. Codebase Verification
+3. Intensive Interview
+4. Module Design
+5. PRD Documentation
+6. Implementation Plan Documentation
+
 ### 1. Problem Discovery
 Gather detailed problem descriptions and solution ideas from the user. Ask clarifying questions to understand:
 - What problem are we solving?
@@ -50,15 +58,13 @@ Identify major modules needed, prioritizing "deep modules" that:
 
 ### 5. PRD Documentation
 
-**Determine TICKET:**
-- If `$ARGUMENTS` provided → use `$ARGUMENTS`
-- If empty → auto-generate next `FEAT-X` number
-
-Create the PRD document at: `documents/{TICKET}/plans/prd.md`
+**Determine TICKET:** Follow the TICKET Resolution rules defined above.
 
 Create the ticket folder structure if it doesn't exist:
 - `documents/{TICKET}/plans/`
 - `documents/{TICKET}/development/`
+
+Create the PRD document at: `documents/{TICKET}/plans/prd.md`
 
 ## PRD Template
 
@@ -101,8 +107,88 @@ Use this template for the PRD document:
 - [ ] Complete
 ```
 
+### 6. Implementation Plan Documentation
+
+After completing the PRD, create detailed implementation plans for each major module or feature area.
+
+**For each module/topic identified in the PRD:**
+
+Create a document at: `documents/{TICKET}/development/<TOPIC_NAME>.md`
+
+Where `<TOPIC_NAME>` should be a descriptive name (e.g., `backend-api.md`, `frontend-ui.md`, `database-schema.md`)
+
+## Implementation Plan Template
+
+Use this template for each implementation plan document:
+
+```markdown
+# Implementation Plan: [Topic Name]
+
+## Overview
+[Brief description of what this implementation covers]
+
+## Files to Modify
+
+### Backend Changes
+- `path/to/file.ts`
+  - Add/modify [specific function/class]
+  - Purpose: [why this change is needed]
+
+### Frontend Changes
+- `path/to/file.tsx`
+  - Add/modify [specific component/hook]
+  - Purpose: [why this change is needed]
+
+### Shared Types
+- `shared/src/types/[name].ts`
+  - Add/modify [specific types]
+  - Purpose: [why this change is needed]
+
+## Step-by-Step Implementation
+
+### Step 1: [Description]
+**File:** `path/to/file.ts`
+
+**Changes:**
+- Add import: `import { X } from 'Y'`
+- Create function: `functionName(params) { ... }`
+- Modify existing code: [specific changes]
+
+**Rationale:** [Why this step is needed]
+
+### Step 2: [Description]
+**File:** `path/to/file.ts`
+
+**Changes:**
+- [Detailed code changes]
+
+**Rationale:** [Why this step is needed]
+
+[Continue for all steps...]
+
+## Testing Steps
+1. [How to test step 1]
+2. [How to test step 2]
+3. [Integration testing approach]
+
+## Dependencies
+- Must complete before: [other topics]
+- Depends on: [other topics]
+
+## Notes
+[Any additional context, edge cases, or considerations]
+```
+
+**Important Guidelines:**
+- Create separate implementation plan files for logically distinct areas (e.g., backend API, frontend UI, database)
+- Be specific about file paths and code changes
+- Include rationale for each major change
+- Ensure implementation plans are detailed enough that they can be followed step-by-step
+
 ## Notes
 - Skip steps as judgment dictates
 - Prioritize deep modules over shallow ones
-- Focus on behaviors and contracts, not file paths
 - Always inform user which TICKET number is being used
+- **DO NOT modify actual code files** - only create/update markdown documentation
+- Create PRD first (`plans/prd.md`), then implementation plans (`development/<TOPIC_NAME>.md`)
+- Implementation plans should be detailed enough to guide development without ambiguity

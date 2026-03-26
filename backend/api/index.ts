@@ -24,7 +24,7 @@ async function bootstrap() {
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('/', app, document, {
+    SwaggerModule.setup('/docs', app, document, {
       customSiteTitle: 'Backend API Documentation',
       customfavIcon: 'https://nestjs.com/favicon.ico',
     });

@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Fullstack monorepo with Next.js frontend and NestJS backend. Uses npm workspaces + Turborepo for unified dependency management.
+Fullstack URL shortener monorepo with Next.js frontend and NestJS backend. Uses npm workspaces + Turborepo for unified dependency management.
 
 ```
 ├── frontend/           # Next.js 15 (App Router) + TanStack Query + Jest — port 3001
-├── backend/            # NestJS 11 + nodemon — port 3000
+├── backend/            # NestJS 11 + Supabase + nodemon — port 3000
 ├── shared/             # Shared TypeScript types (@repo/shared)
 ├── .claude/commands/   # Custom slash commands
 ├── documents/          # Work tracking (organized by ticket)
@@ -44,30 +44,43 @@ cd backend  && npx jest src/path/to/file.spec.ts
 
 ### Request Flow
 
-Frontend home page → `useHealth()` (TanStack Query) → fetches `${NEXT_PUBLIC_API_URL}/api/health` → NestJS controller returns `HealthResponse` (shared type).
+Frontend `page.tsx` (URL shortener form) → `useCreateShortUrl()` mutation hook → `apiClient.urls.create()` (`frontend/src/lib/api-client.ts`) → `fetchApi()` (`frontend/src/utils/fetchers/`) → Next.js rewrite `/api/*` → `http://localhost:3000/*` → NestJS `UrlController` → `UrlService` → `UrlRepository` → Supabase PostgreSQL.
 
-- **API client**: `frontend/src/utils/fetchers/fetchers.client.ts` constructs URLs from `NEXT_PUBLIC_API_URL` (default: `http://localhost:3000`)
-- **TanStack Query provider**: `frontend/src/app/providers.tsx` — wraps app, passes default fetch function
-- **Query hooks**: `frontend/src/queries/` — use shared types for response typing
+- **API client**: `frontend/src/lib/api-client.ts` — typed wrapper using shared types; constructs URLs from `NEXT_PUBLIC_API_URL`
+- **TanStack Query provider**: `frontend/src/app/providers.tsx` — default query fn uses `stringifyQueryKey` to turn key arrays into URL paths
+- **Query hooks**: `frontend/src/queries/` — `useHealth` (query) and `useCreateShortUrl` (mutation)
 
 ### Shared Types
 
-`shared/src/types/` exports interfaces used by both frontend and backend:
+`shared/src/types/` exports interfaces and constants used by both FE and BE:
 - `HealthResponse` — `{ status: 'ok' | 'error', timestamp: string }`
 - `ApiResponse<T>` — generic wrapper
+- `CreateShortUrlRequest` — `{ longUrl: string, customAlias?: string }`
+- `CreateShortUrlResponse` — `{ shortUrl, shortCode, longUrl, createdAt, expiresAt }`
+- `CUSTOM_ALIAS_MAX_LENGTH` — `20`
+- `CUSTOM_ALIAS_PATTERN` — `/^[a-zA-Z0-9_-]+$/`
 
-Import as: `import { HealthResponse } from '@repo/shared'`
+Import as: `import { CreateShortUrlRequest } from '@repo/shared'`
 
 ### Backend Structure
 
-- `src/main.ts` — bootstraps NestJS, enables CORS (`origin: true, credentials: true`), mounts Swagger UI at `/` and JSON at `/api-json`
-- `src/app.module.ts` — root module, loads global `ConfigModule` (reads `.env`)
-- DTOs in `src/dto/` implement shared interfaces and add Swagger decorators
+- `src/main.ts` — bootstraps NestJS, global `ValidationPipe` (whitelist + transform), CORS (`origin: true, credentials: true`), Swagger UI at `/docs`
+- `src/app.module.ts` — root module; imports `ConfigModule` (global), `SupabaseModule`, `UrlModule`
+- `src/supabase/` — global `SupabaseModule` provides `SUPABASE_CLIENT` injection token; built from `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` env vars
+- `src/url/` — full URL shortener feature:
+  - `url.controller.ts` — `POST /api/urls`
+  - `redirect.controller.ts` — `GET /:shortCode` → 302 redirect (excluded from Swagger)
+  - `url.service.ts` — business logic: deduplication, collision handling, expiration
+  - `url.repository.ts` — Supabase queries on `urls` table (`shortUrl`, `longUrl`, `creationTime`, `expirationTime`)
+  - `url-code-generator.ts` — MD5 → Base62, 6-char codes, up to 20 collision offsets then random suffix
+  - `url.constant.ts` — `SHORT_CODE_LENGTH: 6`, `MAX_COLLISION_ATTEMPTS: 20`, `EXPIRATION_DAYS: 30`
+- `src/dto/` — DTOs implement shared interfaces and add `@ApiProperty` decorators
+- `api/index.ts` — Vercel serverless handler (singleton NestJS app)
 
 ### Environment Variables
 
 Copy `.env.example` to `.env` in each workspace before running:
-- `backend/.env` — `NODE_ENV`, `PORT` (default 3000)
+- `backend/.env` — `NODE_ENV`, `PORT` (default 3000), `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
 - `frontend/.env.local` — `NEXT_PUBLIC_API_URL` (default `http://localhost:3000`)
 
 ## Code Style

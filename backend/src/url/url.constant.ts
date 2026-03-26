@@ -1,0 +1,5 @@
+export const URL_CONSTANTS = {
+  SHORT_CODE_LENGTH: 6,
+  MAX_COLLISION_ATTEMPTS: 20,
+  EXPIRATION_DAYS: 30,
+} as const;
