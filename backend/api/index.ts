@@ -59,6 +59,8 @@ export default async function handler(req: Request, res: Response) {
       statusCode: 500,
       message: 'Internal server error',
       error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+      path: req.url,
     });
   }
 }

@@ -8,9 +8,17 @@ import { SUPABASE_CLIENT } from './supabase.constants';
   providers: [
     {
       provide: SUPABASE_CLIENT,
-      useFactory: (configService: ConfigService): SupabaseClient => {
-        const url = configService.getOrThrow<string>('SUPABASE_URL');
-        const key = configService.getOrThrow<string>('SUPABASE_SERVICE_KEY');
+      useFactory: (configService: ConfigService): SupabaseClient | null => {
+        const url = configService.get<string>('SUPABASE_URL');
+        const key = configService.get<string>('SUPABASE_SERVICE_KEY');
+
+        if (!url || !key) {
+          console.warn(
+            'Supabase environment variables (SUPABASE_URL and SUPABASE_SERVICE_KEY) are not configured. ',
+          );
+          return null;
+        }
+
         return createClient(url, key);
       },
       inject: [ConfigService],
