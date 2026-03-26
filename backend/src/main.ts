@@ -26,7 +26,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/docs', app, document, {
+  SwaggerModule.setup('/', app, document, {
     customSiteTitle: 'Backend API Documentation',
     customfavIcon: 'https://nestjs.com/favicon.ico',
   });
@@ -36,6 +36,5 @@ async function bootstrap() {
 
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger UI available at: http://localhost:${port}/docs`);
 }
 bootstrap();
