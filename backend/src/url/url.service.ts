@@ -1,4 +1,10 @@
-import { ConflictException, GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  GoneException,
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateShortUrlResponse } from '@repo/shared';
 import { CreateShortUrlDto } from '../dto/create-short-url.dto';
 import { URL_CONSTANTS } from './url.constant';
@@ -10,13 +16,54 @@ export class UrlService {
   private readonly shortCodeLength = URL_CONSTANTS.SHORT_CODE_LENGTH;
   private readonly maxCollisionAttempts = URL_CONSTANTS.MAX_COLLISION_ATTEMPTS;
 
+  // Blocked domain patterns for security
+  private readonly BLOCKED_DOMAINS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    '192.168.', // Private IP range
+    '10.', // Private IP range
+    '172.16.', // Private IP range
+  ];
+
   constructor(
     private readonly repo: UrlRepository,
     private readonly codeGen: UrlCodeGenerator,
   ) {}
 
+  /**
+   * Validates URL for security concerns
+   * Blocks internal IPs and enforces HTTPS in production
+   */
+  private validateUrl(longUrl: string): void {
+    try {
+      const url = new URL(longUrl);
+
+      // Block internal/private IPs
+      const isBlocked = this.BLOCKED_DOMAINS.some((blocked) =>
+        url.hostname.includes(blocked),
+      );
+      if (isBlocked) {
+        throw new BadRequestException('Cannot shorten internal or private URLs');
+      }
+
+      // Require HTTPS in production
+      if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') {
+        throw new BadRequestException('Only HTTPS URLs are allowed in production');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException('Invalid URL format');
+    }
+  }
+
   async createShortUrl(dto: CreateShortUrlDto, baseUrl: string): Promise<CreateShortUrlResponse> {
     const { longUrl, customAlias } = dto;
+
+    // Validate URL for security
+    this.validateUrl(longUrl);
 
     if (customAlias) {
       return this.createWithCustomAlias(longUrl, customAlias, baseUrl);

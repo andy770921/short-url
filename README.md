@@ -43,20 +43,46 @@ npm run dev
 
 ## Environment Variables
 
-**`backend/.env`**
+### Backend (`backend/.env`)
 
-| Variable               | Default       | Description               |
-| ---------------------- | ------------- | ------------------------- |
-| `NODE_ENV`             | `development` | Node environment          |
-| `PORT`                 | `3000`        | Server port               |
-| `SUPABASE_URL`         | —             | Supabase project URL      |
-| `SUPABASE_SERVICE_KEY` | —             | Supabase service role key |
+| Variable               | Required | Default       | Description                                                                                                                                                             |
+| ---------------------- | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`             | No       | `development` | Node environment (`development` or `production`)                                                                                                                        |
+| `PORT`                 | No       | `3000`        | Server port                                                                                                                                                             |
+| `SUPABASE_URL`         | **Yes**  | —             | Supabase project URL (e.g., `https://xxxxx.supabase.co`)                                                                                                               |
+| `SUPABASE_SERVICE_KEY` | **Yes**  | —             | Supabase service role key (from Supabase dashboard → Project Settings → API)                                                                                           |
+| `SERVICE_KEY`          | **Yes**  | —             | Service-to-service authentication key. **Must match `BACKEND_SERVICE_KEY` in frontend.** Generate with: `openssl rand -hex 32`                                         |
+| `FRONTEND_ORIGIN`      | No       | `http://localhost:3001` | Frontend origin allowed in CORS whitelist. Set to your deployed frontend URL in production (e.g., `https://your-app.vercel.app`)                       |
 
-**`frontend/.env.local`**
+**Backend origin is auto-detected** based on deployment platform:
+- **Vercel**: Uses `VERCEL_URL` (auto-provided)
+- **Render**: Uses `RENDER_EXTERNAL_URL` (auto-provided)
+- **Railway**: Uses `RAILWAY_PUBLIC_DOMAIN` (auto-provided)
+- **Development**: Uses `http://localhost:${PORT}`
 
-| Variable              | Default                 | Description      |
-| --------------------- | ----------------------- | ---------------- |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:3000` | Backend base URL |
+### Frontend (`frontend/.env.local`)
+
+| Variable              | Required | Default                 | Description                                                                                                                                                      |
+| --------------------- | -------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL` | No       | `http://localhost:3000` | Backend API base URL. Set to your deployed backend URL in production (e.g., `https://your-api.vercel.app`)                                                      |
+| `BACKEND_SERVICE_KEY` | **Yes**  | —                       | Service key for authenticating with backend. **Must match `SERVICE_KEY` in backend.** Generate with: `openssl rand -hex 32`. **Do NOT prefix with `NEXT_PUBLIC_`** (must stay server-side) |
+
+### Generating Service Keys
+
+Both `BACKEND_SERVICE_KEY` (frontend) and `SERVICE_KEY` (backend) must have the same value:
+
+```bash
+# Generate a secure key
+openssl rand -hex 32
+
+# Example output: 8f3d9e2a1b4c7f6e5d8a9b2c3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f
+```
+
+Copy the generated key to both:
+- `frontend/.env.local` → `BACKEND_SERVICE_KEY=<key>`
+- `backend/.env` → `SERVICE_KEY=<key>`
+
+> **Security Note**: These keys enable the frontend to call protected backend APIs via Server Actions. Never commit `.env` or `.env.local` files to version control.
 
 ## API Endpoints
 
