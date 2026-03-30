@@ -23,7 +23,7 @@ export class UrlCodeGenerator {
     if (offset <= base62.length - codeLength) {
       return base62.substring(offset, offset + codeLength);
     }
-    return base62.substring(0, codeLength - 2) + this.randomSuffix(2);
+    return this.randomSuffix(codeLength);
   }
 
   randomSuffix(length: number): string {

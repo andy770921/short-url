@@ -41,12 +41,11 @@ describe('UrlCodeGenerator', () => {
       expect(result).toBe('cdefgh');
     });
 
-    it('should append random suffix when offset is out of bounds', () => {
+    it('should return fully random code when offset is out of bounds', () => {
       const base62 = 'abcd';
       const result = generator.getCandidate(base62, 10, 6);
       expect(result.length).toBe(6);
-      // base62.substring(0, 6-2) = 'abcd', + 2 random chars
-      expect(result).toMatch(/^abcd[0-9a-zA-Z]{2}$/);
+      expect(result).toMatch(/^[0-9a-zA-Z]{6}$/);
     });
   });
 

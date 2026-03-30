@@ -98,11 +98,25 @@ describe('UrlService', () => {
     });
 
     it('should throw ConflictException when all collision attempts are exhausted', async () => {
-      mockRepo.isShortCodeTaken.mockResolvedValue(true);
+      mockRepo.create.mockRejectedValue(new ConflictException('duplicate key'));
 
       await expect(
         service.createShortUrl({ longUrl: 'https://example.com' }, BASE_URL),
       ).rejects.toThrow(ConflictException);
+    });
+
+    it('should retry next offset when create() throws ConflictException (collision)', async () => {
+      mockRepo.create
+        .mockRejectedValueOnce(new ConflictException('duplicate key'))
+        .mockResolvedValueOnce(mockRecord);
+      mockCodeGen.getCandidate
+        .mockReturnValueOnce('abc123')
+        .mockReturnValueOnce('bc123x');
+
+      const result = await service.createShortUrl({ longUrl: 'https://example.com' }, BASE_URL);
+      expect(result.shortCode).toBe('bc123x');
+      expect(mockRepo.create).toHaveBeenCalledTimes(2);
+      expect(mockRepo.isShortCodeTaken).not.toHaveBeenCalled();
     });
   });
 

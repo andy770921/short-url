@@ -118,11 +118,14 @@ export class UrlService {
 
     for (let offset = 0; offset < this.maxCollisionAttempts; offset++) {
       const candidate = this.codeGen.getCandidate(base62, offset, this.shortCodeLength);
-      const taken = await this.repo.isShortCodeTaken(candidate);
-
-      if (!taken) {
+      try {
         const record = await this.repo.create(candidate, longUrl);
         return this.buildResponse(candidate, longUrl, record, baseUrl);
+      } catch (error) {
+        if (error instanceof ConflictException) {
+          continue;
+        }
+        throw error;
       }
     }
 
