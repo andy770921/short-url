@@ -86,4 +86,21 @@ export class UrlRepository {
 
     return data as UrlRecord;
   }
+
+  /** Calls the `delete_expired_urls` SQL function via Supabase RPC.
+   *  Primary cleanup is handled by pg_cron; this method exists for
+   *  programmatic access (admin endpoints, testing, manual triggers). */
+  async deleteExpired(): Promise<number> {
+    const supabase = this.ensureSupabaseAvailable();
+
+    const { data, error } = await supabase.rpc('delete_expired_urls');
+
+    if (error) {
+      throw new ServiceUnavailableException(
+        'Failed to delete expired URLs: ' + error.message,
+      );
+    }
+
+    return data as number;
+  }
 }

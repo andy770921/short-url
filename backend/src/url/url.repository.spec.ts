@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, ServiceUnavailableException } from '@nestjs/common';
 import { UrlRepository } from './url.repository';
 import { SUPABASE_CLIENT } from '../supabase/supabase.constants';
 
@@ -119,6 +119,26 @@ describe('UrlRepository', () => {
       await expect(repo.create('abc123', 'https://example.com')).rejects.toThrow(
         ConflictException,
       );
+    });
+  });
+
+  describe('deleteExpired', () => {
+    it('should call the delete_expired_urls RPC and return the count', async () => {
+      mockSupabase.rpc = jest.fn().mockResolvedValue({ data: 5, error: null });
+
+      const count = await repo.deleteExpired();
+
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('delete_expired_urls');
+      expect(count).toBe(5);
+    });
+
+    it('should throw ServiceUnavailableException on RPC error', async () => {
+      mockSupabase.rpc = jest.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'function not found' },
+      });
+
+      await expect(repo.deleteExpired()).rejects.toThrow(ServiceUnavailableException);
     });
   });
 });
