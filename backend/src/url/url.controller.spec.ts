@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { UrlController } from './url.controller';
 import { UrlService } from './url.service';
 
@@ -18,7 +19,10 @@ describe('UrlController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UrlController],
-      providers: [{ provide: UrlService, useValue: mockUrlService }],
+      providers: [
+        { provide: UrlService, useValue: mockUrlService },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-service-key') } },
+      ],
     }).compile();
 
     controller = module.get<UrlController>(UrlController);
