@@ -1,1 +1,68 @@
 @import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Aurora blob animations */
+@theme inline {
+  --animate-aurora-1: aurora-1 25s ease-in-out infinite;
+  --animate-aurora-2: aurora-2 30s ease-in-out infinite;
+  --animate-aurora-3: aurora-3 35s ease-in-out infinite;
+}
+
+@keyframes aurora-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(50px, -60px) scale(1.1);
+  }
+  50% {
+    transform: translate(-30px, 40px) scale(0.95);
+  }
+  75% {
+    transform: translate(40px, 20px) scale(1.05);
+  }
+}
+
+@keyframes aurora-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-40px, 30px) scale(1.15);
+  }
+  50% {
+    transform: translate(50px, -30px) scale(0.9);
+  }
+  75% {
+    transform: translate(-20px, -40px) scale(1.1);
+  }
+}
+
+@keyframes aurora-3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.05);
+  }
+  25% {
+    transform: translate(30px, 50px) scale(0.95);
+  }
+  50% {
+    transform: translate(-40px, -20px) scale(1.1);
+  }
+  75% {
+    transform: translate(20px, -30px) scale(1);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -17,10 +17,20 @@ export const metadata: Metadata = {
   },
 };
 
+function initTheme() {
+  const theme = localStorage.getItem('theme');
+  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  }
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(${initTheme.toString()})()` }} />
+      </head>
+      <body className="bg-slate-50 dark:bg-zinc-950 transition-colors duration-200">
         <Providers>{children}</Providers>
       </body>
     </html>
