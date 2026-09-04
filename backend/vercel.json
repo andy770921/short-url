@@ -10,7 +10,7 @@
     {
       "src": "/(.*)",
       "dest": "api/index.ts",
-      "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+      "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     }
   ]
 }
