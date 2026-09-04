@@ -11,17 +11,18 @@ describe('UrlController', () => {
     getOriginalUrl: jest.fn(),
   };
 
-  const mockRequest = {
-    protocol: 'http',
-    get: jest.fn().mockReturnValue('localhost:3000'),
-  } as any;
+  const mockConfig = {
+    get: jest.fn((key: string, defaultValue?: unknown) =>
+      key === 'FRONTEND_ORIGIN' ? 'https://frontend.example.com' : defaultValue,
+    ),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UrlController],
       providers: [
         { provide: UrlService, useValue: mockUrlService },
-        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-service-key') } },
+        { provide: ConfigService, useValue: mockConfig },
       ],
     }).compile();
 
@@ -33,9 +34,9 @@ describe('UrlController', () => {
   });
 
   describe('createShortUrl', () => {
-    it('should create and return a short URL', async () => {
+    it('should build the short URL from the configured frontend origin, not the request', async () => {
       const mockResponse = {
-        shortUrl: 'http://localhost:3000/abc123',
+        shortUrl: 'https://frontend.example.com/abc123',
         shortCode: 'abc123',
         longUrl: 'https://example.com',
         createdAt: '2026-03-26T00:00:00.000Z',
@@ -44,11 +45,11 @@ describe('UrlController', () => {
 
       mockUrlService.createShortUrl.mockResolvedValue(mockResponse);
 
-      const result = await controller.createShortUrl(mockRequest, { longUrl: 'https://example.com' });
+      const result = await controller.createShortUrl({ longUrl: 'https://example.com' });
       expect(result).toEqual(mockResponse);
       expect(mockUrlService.createShortUrl).toHaveBeenCalledWith(
         { longUrl: 'https://example.com' },
-        'http://localhost:3000',
+        'https://frontend.example.com',
       );
     });
   });

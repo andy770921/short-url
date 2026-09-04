@@ -46,6 +46,8 @@ cd backend  && npx jest src/path/to/file.spec.ts
 
 Frontend `page.tsx` (URL shortener form) → `useCreateShortUrl()` mutation hook → `apiClient.urls.create()` (`frontend/src/lib/api-client.ts`) → `fetchApi()` (`frontend/src/utils/fetchers/`) → Next.js rewrite `/api/*` → `http://localhost:3000/*` → NestJS `UrlController` → `UrlService` → `UrlRepository` → Supabase PostgreSQL.
 
+Short link resolution: browser hits `https://<frontend>/:shortCode` → `frontend/src/middleware.ts` 307-redirects to `<NEXT_PUBLIC_API_URL>/:shortCode` → NestJS `RedirectController` → 302 to the original URL. Short links therefore live on the frontend domain, and the backend builds them from `FRONTEND_ORIGIN`.
+
 - **API client**: `frontend/src/lib/api-client.ts` — typed wrapper using shared types; constructs URLs from `NEXT_PUBLIC_API_URL`
 - **TanStack Query provider**: `frontend/src/app/providers.tsx` — default query fn uses `stringifyQueryKey` to turn key arrays into URL paths
 - **Query hooks**: `frontend/src/queries/` — `useHealth` (query) and `useCreateShortUrl` (mutation)
@@ -66,10 +68,11 @@ Import as: `import { CreateShortUrlRequest } from '@repo/shared'`
 
 - `src/main.ts` — bootstraps NestJS, global `ValidationPipe` (whitelist + transform), CORS (`origin: true, credentials: true`), Swagger UI at `/docs`
 - `src/app.module.ts` — root module; imports `ConfigModule` (global), `SupabaseModule`, `UrlModule`
+- `src/common/config/origins.ts` — resolves the frontend origin (also the short-link base URL) and the backend origin from env vars, never from request headers
 - `src/supabase/` — global `SupabaseModule` provides `SUPABASE_CLIENT` injection token; built from `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` env vars
 - `src/url/` — full URL shortener feature:
   - `url.controller.ts` — `POST /api/urls`
-  - `redirect.controller.ts` — `GET /:shortCode` → 302 redirect (excluded from Swagger)
+  - `redirect.controller.ts` — `GET /:shortCode` → 302 redirect (excluded from Swagger); reached via the frontend middleware, not linked directly
   - `url.service.ts` — business logic: deduplication, collision handling, expiration
   - `url.repository.ts` — Supabase queries on `urls` table (`shortUrl`, `longUrl`, `creationTime`, `expirationTime`)
   - `url-code-generator.ts` — MD5 → Base62, 6-char codes, up to 20 collision offsets then random suffix
@@ -80,7 +83,7 @@ Import as: `import { CreateShortUrlRequest } from '@repo/shared'`
 ### Environment Variables
 
 Copy `.env.example` to `.env` in each workspace before running:
-- `backend/.env` — `NODE_ENV`, `PORT` (default 3000), `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
+- `backend/.env` — `NODE_ENV`, `PORT` (default 3000), `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `FRONTEND_ORIGIN` (default `http://localhost:3001`; also the base URL of generated short links)
 - `frontend/.env.local` — `NEXT_PUBLIC_API_URL` (default `http://localhost:3000`)
 
 ## Code Style

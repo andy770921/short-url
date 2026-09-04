@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import * as express from 'express';
+import { resolveBackendOrigin, resolveFrontendOrigin } from './common/config/origins';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,31 +19,8 @@ async function bootstrap() {
   app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
   // ===== CORS WHITELIST =====
-  const frontendOrigin = configService.get<string>('FRONTEND_ORIGIN', 'http://localhost:3001');
   const port = configService.get<number>('PORT', 3000);
-
-  // Backend origin: automatically detect based on deployment platform
-  // Vercel: VERCEL_URL (e.g., 'my-app-abc123.vercel.app')
-  // Render: RENDER_EXTERNAL_URL (e.g., 'https://my-app.onrender.com')
-  // Railway: RAILWAY_PUBLIC_DOMAIN (e.g., 'my-app.railway.app')
-  // Development: http://localhost:PORT
-  let backendOrigin: string;
-  const vercelUrl = configService.get<string>('VERCEL_URL');
-  const renderUrl = configService.get<string>('RENDER_EXTERNAL_URL');
-  const railwayDomain = configService.get<string>('RAILWAY_PUBLIC_DOMAIN');
-
-  if (renderUrl) {
-    // Render provides full URL with protocol
-    backendOrigin = renderUrl;
-  } else if (vercelUrl) {
-    backendOrigin = `https://${vercelUrl}`;
-  } else if (railwayDomain) {
-    backendOrigin = `https://${railwayDomain}`;
-  } else {
-    backendOrigin = `http://localhost:${port}`;
-  }
-
-  const allowedOrigins = [frontendOrigin, backendOrigin];
+  const allowedOrigins = [resolveFrontendOrigin(configService), resolveBackendOrigin(configService)];
 
   app.enableCors({
     origin: allowedOrigins,        // Whitelist: Frontend + Backend self

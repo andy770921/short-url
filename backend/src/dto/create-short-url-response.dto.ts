@@ -4,7 +4,7 @@ import { CreateShortUrlResponse } from '@repo/shared';
 export class CreateShortUrlResponseDto implements CreateShortUrlResponse {
   @ApiProperty({
     description: 'The full short URL',
-    example: 'http://localhost:3000/abc123',
+    example: 'http://localhost:3001/abc123',
   })
   shortUrl: string;
 
