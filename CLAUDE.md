@@ -10,7 +10,6 @@ Fullstack URL shortener monorepo with Next.js frontend and NestJS backend. Uses 
 ├── frontend/           # Next.js 15 (App Router) + TanStack Query + Jest — port 3001
 ├── backend/            # NestJS 11 + Supabase + nodemon — port 3000
 ├── shared/             # Shared TypeScript types (@repo/shared)
-├── .github/workflows/  # Scheduled Supabase keep-alive ping
 ├── .claude/commands/   # Custom slash commands
 ├── documents/          # Work tracking (organized by ticket)
 ├── turbo.json          # Turborepo configuration
@@ -119,6 +118,6 @@ Located in `.claude/commands/[skill-name]/SKILL.md`. Replace `[TICKET]` with tic
 ## Deployment (Vercel)
 
 - **Frontend**: set root directory `frontend`, auto-detected as Next.js
-- **Backend**: set root directory `backend`, runs as serverless function via `backend/api/index.ts`
+- **Backend**: set root directory `backend`, runs as serverless function via `backend/api/index.ts`. `backend/vercel.json` uses `functions` + `rewrites` (not legacy `builds`/`routes`); `installCommand` installs from the monorepo root, so "Include source files outside of the Root Directory" must stay enabled
 - Backend serverless limitations: cold starts, no WebSockets, 10s timeout
-- Supabase Free plan pauses after ~7 days without DB activity; `.github/workflows/supabase-keep-alive.yml` calls `/api/health/db` twice a day (UTC 03:17, 15:17). Scheduled workflows in a public repo are auto-disabled after 60 days without pushes. See `documents/FEAT-6/`
+- Supabase Free plan pauses after ~7 days without DB activity; three Vercel Cron jobs in `backend/vercel.json` call `/api/health/db` once a day each (UTC 01, 09, 17). Hobby allows at most one run per day per job. See `documents/FEAT-6/`

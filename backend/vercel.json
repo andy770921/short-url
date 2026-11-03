@@ -1,16 +1,22 @@
 {
   "version": 2,
-  "builds": [
+  "framework": null,
+  "installCommand": "cd .. && npm install --include=dev && cd shared && npm run build",
+  "buildCommand": "true",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "../shared/**/*"
+    }
+  },
+  "rewrites": [
     {
-      "src": "api/index.ts",
-      "use": "@vercel/node"
+      "source": "/(.*)",
+      "destination": "/api/index.ts"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "api/index.ts",
-      "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-    }
+  "crons": [
+    { "path": "/api/health/db", "schedule": "0 1 * * *" },
+    { "path": "/api/health/db", "schedule": "0 9 * * *" },
+    { "path": "/api/health/db", "schedule": "0 17 * * *" }
   ]
 }

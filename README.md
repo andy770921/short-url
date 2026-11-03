@@ -89,7 +89,7 @@ Copy the generated key to both:
 | Method | Path             | Description                                                                 |
 | ------ | ---------------- | --------------------------------------------------------------------------- |
 | `GET`  | `/api/health`    | Health check → `{ status, timestamp }`                                      |
-| `GET`  | `/api/health/db` | Database health check (503 when unreachable); pinged by the keep-alive job  |
+| `GET`  | `/api/health/db` | Database health check (503 if unreachable); called by Vercel Cron daily     |
 | `POST` | `/api/urls`      | Create short URL → `{ shortUrl, shortCode, longUrl, createdAt, expiresAt }` |
 | `GET`  | `/:shortCode`    | Redirect to original URL (302)                                              |
 | `GET`  | `/docs`          | Swagger UI                                                                  |
@@ -207,10 +207,10 @@ The backend runs as a Vercel serverless function via `backend/api/index.ts`. Set
 
 > **Note**: Serverless limitations apply — cold starts, 10s timeout, no WebSockets.
 
-Supabase pauses Free-plan projects after ~7 days without database activity. The
-[`Supabase keep-alive`](.github/workflows/supabase-keep-alive.yml) GitHub Actions workflow
-calls `/api/health/db` twice a day to prevent that. See
-[documents/FEAT-6](documents/FEAT-6/plans/supabase-keep-alive.md).
+Supabase pauses Free-plan projects after ~7 days without database activity. Three
+[Vercel Cron](https://vercel.com/docs/cron-jobs) jobs in
+[`backend/vercel.json`](backend/vercel.json) call `/api/health/db` once each per day to
+prevent that. See [documents/FEAT-6](documents/FEAT-6/plans/supabase-keep-alive.md).
 
 ## Documentation
 
