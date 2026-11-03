@@ -4,7 +4,8 @@
 
 - **Ticket:** FEAT-6
 - **Created:** 2026-11-03
-- **Revised:** 2026-11-03 — switched the scheduler from GitHub Actions to Vercel Cron
+- **Revised:** 2026-11-03 — switched the scheduler from GitHub Actions to Vercel Cron; added
+  `outputDirectory` after the first deploy failed with `STATIC_BUILD_NO_OUT_DIR`
 - **Author:** Claude Code
 - **Status:** Implemented
 
@@ -154,14 +155,15 @@ The old file used the legacy `builds` + `routes` properties. Vercel recommends a
 ([vercel.json reference][vercel-json]). The new file uses the same shape as the sibling
 `bread-shop` project, which made this migration in its REFACTOR-3:
 
-| Key                                      | Purpose                                                                                                                                                               |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `framework: null`                        | Pins the Framework Preset to "Other". Under `builds`, the dashboard preset was ignored. Now it applies, so it is pinned in code instead of depending on the dashboard |
-| `installCommand`                         | Installs from the monorepo root, so the `@repo/shared` workspace link resolves, and rebuilds `shared/dist`                                                            |
-| `buildCommand: "true"`                   | Skips the repo-wide build; `@vercel/node` compiles `api/index.ts` itself                                                                                              |
-| `functions["api/index.ts"].includeFiles` | Ships `../shared/**/*` with the function so `require('@repo/shared')` works at runtime. Must be a single string glob                                                  |
-| `rewrites: /(.*) → /api/index.ts`        | Replaces `routes`. Rewrites match every HTTP method, so the HEAD fix from `c5882f4` is preserved without a `methods` list                                             |
-| `crons`                                  | The keep-alive schedule                                                                                                                                               |
+| Key                                      | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `framework: null`                        | Pins the Framework Preset to "Other". Under `builds`, the dashboard preset was ignored. Now it applies, so it is pinned in code instead of depending on the dashboard                                                                                                                                                                                                                                                                    |
+| `installCommand`                         | Installs from the monorepo root, so the `@repo/shared` workspace link resolves, and rebuilds `shared/dist`                                                                                                                                                                                                                                                                                                                               |
+| `buildCommand`                           | `mkdir -p public && touch public/.gitkeep`. Skips the repo-wide build; `@vercel/node` compiles `api/index.ts` itself. The placeholder file is explained under `outputDirectory`                                                                                                                                                                                                                                                          |
+| `outputDirectory: "public"`              | The "Other" preset needs a non-empty static output directory when a build command is set. Without one, the first deploy failed with `STATIC_BUILD_NO_OUT_DIR`; with an empty one, it fails with `STATIC_BUILD_EMPTY_OUT_DIR`. `public/` holds only `.gitkeep`. It cannot be `index.html`, because `/` serves Swagger UI, and the dotted name cannot match a short code (`[a-zA-Z0-9_-]+`). Every other path falls through to the rewrite |
+| `functions["api/index.ts"].includeFiles` | Ships `../shared/**/*` with the function so `require('@repo/shared')` works at runtime. Must be a single string glob                                                                                                                                                                                                                                                                                                                     |
+| `rewrites: /(.*) → /api/index.ts`        | Replaces `routes`. Rewrites match every HTTP method, so the HEAD fix from `c5882f4` is preserved without a `methods` list                                                                                                                                                                                                                                                                                                                |
+| `crons`                                  | The keep-alive schedule                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ## Risks
 

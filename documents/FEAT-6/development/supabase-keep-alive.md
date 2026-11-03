@@ -4,7 +4,8 @@
 
 - **Ticket:** FEAT-6
 - **Created:** 2026-11-03
-- **Revised:** 2026-11-03 — GitHub Actions workflow replaced by Vercel Cron
+- **Revised:** 2026-11-03 — GitHub Actions workflow replaced by Vercel Cron; `outputDirectory`
+  added after the first deploy failed
 - **Author:** Claude Code
 - **Plan:** [../plans/supabase-keep-alive.md](../plans/supabase-keep-alive.md)
 
@@ -71,7 +72,8 @@ After:
   "version": 2,
   "framework": null,
   "installCommand": "cd .. && npm install --include=dev && cd shared && npm run build",
-  "buildCommand": "true",
+  "buildCommand": "mkdir -p public && touch public/.gitkeep",
+  "outputDirectory": "public",
   "functions": {
     "api/index.ts": {
       "includeFiles": "../shared/**/*"
@@ -94,6 +96,13 @@ Notes:
   `CUSTOM_ALIAS_MAX_LENGTH` are runtime values). `installCommand` installs from the
   monorepo root, and `includeFiles` ships `../shared` with the function. `shared/dist` is
   committed in this repo, and the install step rebuilds it anyway.
+- **`outputDirectory` is required.** With `framework: null` ("Other") and a build command,
+  Vercel requires a static output directory. The first deploy of this config used
+  `"buildCommand": "true"` and failed with
+  `STATIC_BUILD_NO_OUT_DIR: No Output Directory named "public" found`. An empty `public/`
+  fails too, with `STATIC_BUILD_EMPTY_OUT_DIR`. The build command therefore writes
+  `public/.gitkeep`, which is the only static file. Do not put an `index.html` there,
+  because it would shadow Swagger UI at `/`.
 - The file validates against Vercel's published schema (`https://openapi.vercel.sh/vercel.json`).
 
 ## Setup After Merge
@@ -126,6 +135,26 @@ cd backend && npx jest src/app.controller.spec.ts
 npm run dev
 curl -i http://localhost:3000/api/health/db
 ```
+
+### Reproducing the Vercel build locally
+
+`vercel build` needs no login when the project settings are supplied by hand. Run it in a
+throwaway clone so `.vercel/` and the root `node_modules` stay out of the working tree:
+
+```bash
+git clone . /tmp/short-url-build && cd /tmp/short-url-build
+mkdir -p .vercel && cat > .vercel/project.json <<'JSON'
+{"projectId":"prj_local","orgId":"team_local","settings":{"rootDirectory":"backend",
+ "framework":null,"nodeVersion":"22.x","sourceFilesOutsideRootDirectory":true}}
+JSON
+npx vercel build --yes
+```
+
+A successful build writes `.vercel/output/` with `static/.gitkeep`, the
+`functions/api/index.func` bundle, and the three crons in `config.json`. Files listed in
+the function's `.vc-config.json` `filePathMap`, including the `node_modules/@repo/shared`
+symlink, are only added at deploy time. To run the bundle outside the repo, copy those
+files in first.
 
 Vercel Cron does not run locally (`vercel dev` and framework dev servers are not
 supported). Calling the endpoint directly is the local equivalent.

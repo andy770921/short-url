@@ -118,6 +118,6 @@ Located in `.claude/commands/[skill-name]/SKILL.md`. Replace `[TICKET]` with tic
 ## Deployment (Vercel)
 
 - **Frontend**: set root directory `frontend`, auto-detected as Next.js
-- **Backend**: set root directory `backend`, runs as serverless function via `backend/api/index.ts`. `backend/vercel.json` uses `functions` + `rewrites` (not legacy `builds`/`routes`); `installCommand` installs from the monorepo root, so "Include source files outside of the Root Directory" must stay enabled
+- **Backend**: set root directory `backend`, runs as serverless function via `backend/api/index.ts`. `backend/vercel.json` uses `functions` + `rewrites` (not legacy `builds`/`routes`); `installCommand` installs from the monorepo root, so "Include source files outside of the Root Directory" must stay enabled. `framework: null` requires a non-empty `outputDirectory`, so `buildCommand` writes `public/.gitkeep`. Don't revert it to `"true"` (deploy fails with `STATIC_BUILD_NO_OUT_DIR`), and don't add `public/index.html` (it would shadow Swagger at `/`)
 - Backend serverless limitations: cold starts, no WebSockets, 10s timeout
 - Supabase Free plan pauses after ~7 days without DB activity; three Vercel Cron jobs in `backend/vercel.json` call `/api/health/db` once a day each (UTC 01, 09, 17). Hobby allows at most one run per day per job. See `documents/FEAT-6/`
