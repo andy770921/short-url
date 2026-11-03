@@ -86,12 +86,13 @@ Copy the generated key to both:
 
 ## API Endpoints
 
-| Method | Path          | Description                                                                 |
-| ------ | ------------- | --------------------------------------------------------------------------- |
-| `GET`  | `/api/health` | Health check → `{ status, timestamp }`                                      |
-| `POST` | `/api/urls`   | Create short URL → `{ shortUrl, shortCode, longUrl, createdAt, expiresAt }` |
-| `GET`  | `/:shortCode` | Redirect to original URL (302)                                              |
-| `GET`  | `/docs`       | Swagger UI                                                                  |
+| Method | Path             | Description                                                                 |
+| ------ | ---------------- | --------------------------------------------------------------------------- |
+| `GET`  | `/api/health`    | Health check → `{ status, timestamp }`                                      |
+| `GET`  | `/api/health/db` | Database health check (503 when unreachable); pinged by the keep-alive job  |
+| `POST` | `/api/urls`      | Create short URL → `{ shortUrl, shortCode, longUrl, createdAt, expiresAt }` |
+| `GET`  | `/:shortCode`    | Redirect to original URL (302)                                              |
+| `GET`  | `/docs`          | Swagger UI                                                                  |
 
 ### Create Short URL
 
@@ -205,6 +206,11 @@ cd backend  && npx jest src/path/to/file.spec.ts
 The backend runs as a Vercel serverless function via `backend/api/index.ts`. Set `NEXT_PUBLIC_API_URL` in the frontend Vercel project to the deployed backend URL.
 
 > **Note**: Serverless limitations apply — cold starts, 10s timeout, no WebSockets.
+
+Supabase pauses Free-plan projects after ~7 days without database activity. The
+[`Supabase keep-alive`](.github/workflows/supabase-keep-alive.yml) GitHub Actions workflow
+calls `/api/health/db` twice a day to prevent that. See
+[documents/FEAT-6](documents/FEAT-6/plans/supabase-keep-alive.md).
 
 ## Documentation
 

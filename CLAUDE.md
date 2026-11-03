@@ -10,6 +10,7 @@ Fullstack URL shortener monorepo with Next.js frontend and NestJS backend. Uses 
 ├── frontend/           # Next.js 15 (App Router) + TanStack Query + Jest — port 3001
 ├── backend/            # NestJS 11 + Supabase + nodemon — port 3000
 ├── shared/             # Shared TypeScript types (@repo/shared)
+├── .github/workflows/  # Scheduled Supabase keep-alive ping
 ├── .claude/commands/   # Custom slash commands
 ├── documents/          # Work tracking (organized by ticket)
 ├── turbo.json          # Turborepo configuration
@@ -68,6 +69,7 @@ Import as: `import { CreateShortUrlRequest } from '@repo/shared'`
 
 - `src/main.ts` — bootstraps NestJS, global `ValidationPipe` (whitelist + transform), CORS (`origin: true, credentials: true`), Swagger UI at `/docs`
 - `src/app.module.ts` — root module; imports `ConfigModule` (global), `SupabaseModule`, `UrlModule`
+- `src/app.controller.ts` — `GET /api/health` and `GET /api/health/db` (one-row read on `urls`, 503 on failure)
 - `src/common/config/origins.ts` — resolves the frontend origin (also the short-link base URL) and the backend origin from env vars, never from request headers
 - `src/supabase/` — global `SupabaseModule` provides `SUPABASE_CLIENT` injection token; built from `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` env vars
 - `src/url/` — full URL shortener feature:
@@ -119,3 +121,4 @@ Located in `.claude/commands/[skill-name]/SKILL.md`. Replace `[TICKET]` with tic
 - **Frontend**: set root directory `frontend`, auto-detected as Next.js
 - **Backend**: set root directory `backend`, runs as serverless function via `backend/api/index.ts`
 - Backend serverless limitations: cold starts, no WebSockets, 10s timeout
+- Supabase Free plan pauses after ~7 days without DB activity; `.github/workflows/supabase-keep-alive.yml` calls `/api/health/db` twice a day (UTC 03:17, 15:17). Scheduled workflows in a public repo are auto-disabled after 60 days without pushes. See `documents/FEAT-6/`
